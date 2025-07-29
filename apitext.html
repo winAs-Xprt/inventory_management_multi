@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory API Categories Summary</title>
+  <!-- SheetJS for Excel export -->
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    body {
+      background: #fcfcff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 40px;
+    }
+    h1 {
+      color: #31334f;
+      margin-bottom: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 400px;
+      background: #fff;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px #eee;
+    }
+    th, td {
+      padding: 12px 18px;
+      border: 1px solid #dedede;
+      text-align: left;
+    }
+    th {
+      background: #4256ca;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f4f4fa;
+    }
+    button {
+      background: #4256ca;
+      color: #fff;
+      border: none;
+      padding: 10px 26px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #213076;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Category Summary</h1>
+  <table id="category-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filled by JS -->
+    </tbody>
+  </table>
+  <button onclick="exportTableToExcel()">Export to Excel</button>
+
+  <script>
+    // Data array: update this as needed, or fetch from API
+    const categoryData = [
+      { Category: "Admin", Count: 7 },
+      { Category: "Stocks", Count: 14 },
+      { Category: "product Request", Count: 8 },
+      { Category: "Image", Count: 2 },
+      { Category: "Vendor", Count: 5 },
+      { Category: "Product", Count: 6 },
+      { Category: "Purchase", Count: 5 },
+      { Category: "Setting", Count: 10 },
+      { Category: "Total APIs", Count: 57 }
+    ];
+
+    // Fill table
+    function populateTable() {
+      let tbody = document.querySelector('#category-table tbody');
+      tbody.innerHTML = '';
+      categoryData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${item.Category}</td><td>${item.Count}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    populateTable();
+
+    // Export table to Excel: SheetJS
+    function exportTableToExcel() {
+      /* Get table element */
+      var table = document.getElementById('category-table');
+      /* Convert table to workbook */
+      var wb = XLSX.utils.table_to_book(table, {sheet: "Categories"});
+      /* Save */
+      XLSX.writeFile(wb, "category_summary.xlsx");
+    }
+  </script>
+</body>
+</html>

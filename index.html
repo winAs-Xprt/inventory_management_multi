@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory Management - Super Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./Style/style.css" />
+  </head>
+  <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- MULTI ECOM SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <i class="fas fa-gem"></i>
+          <span class="logo-text">Multi Ecom</span>
+        </a>
+      </div>
+
+      <div class="search-container">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search..."
+          id="searchInput"
+        />
+      </div>
+
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link active">
+              <i class="fas fa-chart-pie"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2ProductmanagemntModule.html" class="nav-link">
+              <i class="fas fa-box"></i>
+              <span>Products</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2StockManagementModule.html" class="nav-link">
+              <i class="fas fa-warehouse"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2Purchasemanagementmodule.html" class="nav-link">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Purchase</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2VendorManagementModule.html" class="nav-link">
+              <i class="fas fa-store"></i>
+              <span>Vendor</span>
+            </a>
+          </li>
+          <!-- <li class="nav-item">
+                    <a href="2Notification&Alertpage.html" class="nav-link">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                    </a>
+                </li> -->
+          <!--  <li class="nav-item">
+            <a href="settng.html" class="nav-link">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </li> -->
+        </ul>
+      </nav>
+
+      <div class="user-profile">
+        <div class="user-avatar">AM</div>
+        <div class="user-info">
+          <div class="user-name">Admin Manager</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </aside>
+
+    <div class="dashboard-container">
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <header class="header animate-fade-in">
+          <div class="welcome-section">
+            <h1>Inventory Management Dashboard</h1>
+            <p>
+              Monitor stock levels, track purchases, and manage inventory
+              efficiently with real-time data insights.
+            </p>
+          </div>
+          <div class="header-actions">
+            <div class="period-dropdown">
+              <select
+                class="period-select"
+                id="periodSelect"
+                onchange="changePeriod()"
+              >
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <button class="refresh-btn" onclick="refreshData()">
+              <i class="fas fa-refresh"></i>
+              Refresh
+            </button>
+            <button class="sync-btn" onclick="syncData()">
+              <i class="fas fa-sync"></i>
+              Sync
+            </button>
+            <div class="notification-container">
+              <button
+                class="notification-bell-btn"
+                id="notificationBtn"
+                onclick="toggleNotifications()"
+              >
+                <i class="fas fa-bell"></i>
+                <span class="notification-count" id="notificationCount">6</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Notification Portal -->
+        <div class="notification-portal" id="notificationPortal">
+          <div
+            class="notification-backdrop"
+            onclick="closeNotifications()"
+          ></div>
+          <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-dropdown-header">
+              <h3>Recent Notifications</h3>
+              <button class="mark-all-read-btn" onclick="markAllAsRead()">
+                Mark all read
+              </button>
+            </div>
+
+            <div class="notification-list-container">
+              <div class="notification-item unread" data-type="critical">
+                <div class="notification-item-icon critical">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="notification-item-content">
+                  <div class="notification-item-title">
+                    Critical Low Stock Alert
+                  </div>
+                  <div class="notification-item-message">
+                    Steel Rods inventory is below minimum threshold (12 units
+                    remaining)
+                  </div>
+                  <div class="notification-item-time">5 minutes ago</div>
+                </div>
+              </div>
+
+              <div class="notification-item unread" data-type="warning">
+                <div class="notification-item-icon warning">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="notification-item-content">
+                  <div class="notification-item-title">
+                    Pending Purchase Approval
+                  </div>
+                  <div class="notification-item-message">
+                    3 purchase orders totaling ₹2.4L awaiting your approval
+                  </div>
+                  <div class="notification-item-time">12 minutes ago</div>
+                </div>
+              </div>
+
+              <div class="notification-item unread" data-type="info">
+                <div class="notification-item-icon info">
+                  <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="notification-item-content">
+                  <div class="notification-item-title">
+                    New Employee Request
+                  </div>
+                  <div class="notification-item-message">
+                    John Doe requested 50 units of Premium Sand for Project
+                    Alpha
+                  </div>
+                  <div class="notification-item-time">25 minutes ago</div>
+                </div>
+              </div>
+
+              <div class="notification-item" data-type="success">
+                <div class="notification-item-icon success">
+                  <i class="fas fa-truck"></i>
+                </div>
+                <div class="notification-item-content">
+                  <div class="notification-item-title">Delivery Completed</div>
+                  <div class="notification-item-message">
+                    200 units of Granite Stone received from ABC Suppliers
+                  </div>
+                  <div class="notification-item-time">1 hour ago</div>
+                </div>
+              </div>
+
+              <div class="notification-item" data-type="info">
+                <div class="notification-item-icon info">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="notification-item-content">
+                  <div class="notification-item-title">
+                    Monthly Analytics Report
+                  </div>
+                  <div class="notification-item-message">
+                    Inventory performance report for July 2025 is ready
+                  </div>
+                  <div class="notification-item-time">2 hours ago</div>
+                </div>
+              </div>
+
+              <div class="notification-item" data-type="warning">
+                <div class="notification-item-icon warning">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="notification-item-content">
+                  <div class="notification-item-title">
+                    Scheduled Maintenance
+                  </div>
+                  <div class="notification-item-message">
+                    System maintenance scheduled for tomorrow 2:00 AM - 4:00 AM
+                  </div>
+                  <div class="notification-item-time">3 hours ago</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="notification-dropdown-footer">
+              <button
+                class="view-all-notifications-btn"
+                onclick="viewAllNotifications()"
+              >
+                View All Notifications
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Stats Grid -->
+        <div class="stats-grid">
+          <!-- REPLACED: In/Out Stock Card -->
+          <div class="stat-card animate-fade-in pulse-animation hover-lift">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-exchange-alt"></i>
+                In/Out Stock Analysis
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stock-flow-container">
+              <div class="stock-flow-item">
+                <div class="stock-flow-value stock-in" id="stockInValue">
+                  8,547
+                </div>
+                <div class="stock-flow-label stock-in">Stock In</div>
+              </div>
+              <div class="stock-divider"></div>
+              <div class="stock-flow-item">
+                <div class="stock-flow-value stock-out" id="stockOutValue">
+                  4,000
+                </div>
+                <div class="stock-flow-label stock-out">Stock Out</div>
+              </div>
+            </div>
+            <div class="stat-change positive" style="color: rgb(17, 206, 17); padding-top:10px ;" id="stockFlowChange">
+              <i class="fas fa-arrow-up" ></i>
+              +12.5% net inflow
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in pulse-animation hover-lift">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="purchaseTitle">Purchases This Month</span>
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="purchaseValue">₹8.4L</div>
+            <div class="stat-change positive" id="purchaseChange">
+              <i class="fas fa-arrow-up"></i>
+              +12.8% vs July 2024
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in pulse-animation hover-lift">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-clock"></i>
+                Pending Requests
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="pendingValue">47</div>
+            <div class="stat-change warning" id="pendingChange">
+              <i class="fas fa-arrow-up"></i>
+              +8 new today
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in pulse-animation hover-lift">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Low Stock Alerts
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="lowStockValue">23</div>
+            <div class="stat-change negative" id="lowStockChange">
+              <i class="fas fa-exclamation-triangle"></i>
+              5 Critical Items
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Chart Section with 4 columns -->
+        <div class="chart-section">
+          <div class="chart-card animate-fade-in hover-lift">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">
+                  <i class="fas fa-chart-pie"></i>
+                  Stock Distribution by Category
+                </div>
+                <div class="chart-value" id="stockDistributionValue">
+                  12,547 Items
+                </div>
+                <div class="chart-subtitle" id="stockDistributionSubtitle">
+                  Across 8 categories
+                </div>
+              </div>
+              <button class="view-details-btn" onclick="viewStockDetails()">
+                <i class="fas fa-external-link-alt"></i>
+                View Details
+              </button>
+            </div>
+            <div class="pie-chart-container">
+              <canvas id="stockDistributionChart"></canvas>
+            </div>
+            <div class="chart-legend" id="stockDistributionLegend">
+              <!-- Legend will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="chart-card animate-fade-in hover-lift">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">
+                  <i class="fas fa-chart-line"></i>
+                  Purchase Trends
+                </div>
+                <div class="chart-value" id="purchaseTrendsValue">₹8.4L</div>
+                <div class="chart-subtitle" id="purchaseTrendsSubtitle">
+                  +12.8% growth
+                </div>
+              </div>
+            </div>
+            <div class="mini-chart">
+              <canvas id="purchaseTrendChart"></canvas>
+            </div>
+            <div class="chart-info">
+              <div class="chart-info-item">
+                <span class="chart-info-label" id="thisMonthLabel"
+                  >This Month:</span
+                >
+                <span class="chart-info-value" id="thisMonthValue">₹8.4L</span>
+              </div>
+              <div class="chart-info-item">
+                <span class="chart-info-label" id="lastMonthLabel"
+                  >Last Month:</span
+                >
+                <span class="chart-info-value" id="lastMonthValue">₹7.9L</span>
+              </div>
+              <div class="chart-info-item">
+                <span class="chart-info-label">Growth:</span>
+                <span
+                  class="chart-info-value"
+                  style="color: var(--accent-green)"
+                  id="growthValue"
+                  >+12.8%</span
+                >
+              </div>
+            </div>
+            <div class="chart-description" id="purchaseDescription">
+              Last 6 months performance
+            </div>
+          </div>
+
+          <div class="chart-card animate-fade-in hover-lift">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">
+                  <i class="fas fa-star"></i>
+                  Top Vendors
+                </div>
+                <div class="chart-value" id="topVendorsValue">98%</div>
+                <div class="chart-subtitle" id="topVendorsSubtitle">
+                  Avg. performance
+                </div>
+              </div>
+            </div>
+            <div class="mini-chart">
+              <canvas id="vendorPerformanceChart"></canvas>
+            </div>
+            <div class="chart-info">
+              <div class="chart-info-item">
+                <span class="chart-info-label">Best Vendor:</span>
+                <span class="chart-info-value" id="bestVendorName"
+                  >ABC Suppliers</span
+                >
+              </div>
+              <div class="chart-info-item">
+                <span class="chart-info-label">Score:</span>
+                <span
+                  class="chart-info-value"
+                  style="color: var(--accent-green)"
+                  id="bestVendorScore"
+                  >95%</span
+                >
+              </div>
+              <div class="chart-info-item">
+                <span class="chart-info-label">Active:</span>
+                <span class="chart-info-value" id="activeVendors"
+                  >5 vendors</span
+                >
+              </div>
+            </div>
+            <div class="chart-description" id="vendorDescription">
+              Top 5 vendors this month
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Section -->
+        <div class="activity-section">
+          <div class="activity-card animate-fade-in hover-lift">
+            <div class="activity-header">
+              <div class="header-content">
+                <div class="chart-title">
+                  <i class="fas fa-bell"></i>
+                  Recent Activities
+                </div>
+                <button class="view-details-btn" onclick="viewAllActivities()">
+                  <i class="fas fa-external-link-alt"></i>
+                  View All
+                </button>
+              </div>
+            </div>
+
+            <div class="activity-content-wrapper">
+              <div class="activity-item">
+                <div class="activity-icon success">
+                  <i class="fas fa-plus"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    New stock received: Premium Sand
+                  </div>
+                  <div class="activity-time">
+                    500 units added • 5 minutes ago
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon warning">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Low stock alert: Steel Rods</div>
+                  <div class="activity-time">
+                    Only 12 units remaining • 15 minutes ago
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon info">
+                  <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Purchase order approved</div>
+                  <div class="activity-time">
+                    PO-2025-0147 for ₹45,000 • 1 hour ago
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon success">
+                  <i class="fas fa-truck"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Delivery completed</div>
+                  <div class="activity-time">
+                    200 units from ABC Suppliers • 2 hours ago
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon info">
+                  <i class="fas fa-user-check"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Employee request approved</div>
+                  <div class="activity-time">
+                    100 units Granite Stone • 3 hours ago
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon warning">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Reorder point reached</div>
+                  <div class="activity-time">
+                    Cement Blocks need restocking • 4 hours ago
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="activity-card animate-fade-in hover-lift">
+            <div class="activity-header">
+              <div class="header-content">
+                <div class="chart-title">
+                  <i class="fas fa-chart-bar"></i>
+                  Stock Alerts & Notifications
+                </div>
+                <button class="view-details-btn" onclick="viewAllAlerts()">
+                  <i class="fas fa-external-link-alt"></i>
+                  View All
+                </button>
+              </div>
+            </div>
+
+            <div class="activity-content-wrapper">
+              <div class="activity-item">
+                <div class="activity-icon critical">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    Steel Rods - Critical Low Stock
+                    <span class="priority-badge critical">Critical</span>
+                  </div>
+                  <div class="activity-time">
+                    12 units remaining • Minimum: 50
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon warning">
+                  <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    Cement Blocks - Low Stock Warning
+                    <span class="priority-badge high">High</span>
+                  </div>
+                  <div class="activity-time">
+                    45 units remaining • Minimum: 75
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon warning">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    Iron Ore - Reorder Point Reached
+                    <span class="priority-badge medium">Medium</span>
+                  </div>
+                  <div class="activity-time">
+                    89 units remaining • Reorder: 100
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon success">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    Premium Sand - Stock Replenished
+                    <span class="priority-badge low">Normal</span>
+                  </div>
+                  <div class="activity-time">
+                    734 units available • Target: 500
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon info">
+                  <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    Granite Stone - Adequate Stock
+                    <span class="priority-badge low">Normal</span>
+                  </div>
+                  <div class="activity-time">
+                    345 units available • Target: 200
+                  </div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon warning">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">
+                    Aluminum Sheets - Expiry Alert
+                    <span class="priority-badge medium">Medium</span>
+                  </div>
+                  <div class="activity-time">25 units expiring in 30 days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Product Requests Summary Table with Multiple Items Support - PRIORITY COLUMN REMOVED -->
+        <div class="requests-table animate-fade-in hover-lift card-spacing">
+          <div class="table-header">
+            <div class="chart-title">
+              <i class="fas fa-clipboard-list"></i>
+              Product Requests Summary
+            </div>
+            <button class="view-details-btn" onclick="viewAllRequests()">
+              <i class="fas fa-external-link-alt"></i>
+              View All Requests
+            </button>
+          </div>
+
+          <div class="table-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Employee</th>
+                  <th>Items Requested</th>
+                  <th>Quantity</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="requestsTableBody">
+                <tr data-request-id="REQ-2025-001">
+                  <td><strong>#REQ-2025-001</strong></td>
+                  <td>John Doe</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">
+                        Premium Sand, Steel Rods, Cement...
+                      </div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>Premium Sand - 50 units</li>
+                          <li>Steel Rods - 25 units</li>
+                          <li>Cement Blocks - 100 units</li>
+                          <li>Granite Stone - 75 units</li>
+                        </ul>
+                        <div class="item-count">4 items total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>250 units</td>
+                  <td>
+                    <span class="status-badge pending" id="status-REQ-2025-001"
+                      >Pending Approval</span
+                    >
+                  </td>
+                  <td>23 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn approve-btn"
+                      onclick="approveRequest('REQ-2025-001')"
+                      id="approve-REQ-2025-001"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button
+                      class="action-btn reject-btn"
+                      onclick="rejectRequest('REQ-2025-001')"
+                      id="reject-REQ-2025-001"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-001')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                <tr data-request-id="REQ-2025-002">
+                  <td><strong>#REQ-2025-002</strong></td>
+                  <td>Jane Smith</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">
+                        Steel Rods, Iron Ore...
+                      </div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>Steel Rods - 25 units</li>
+                          <li>Iron Ore - 200 units</li>
+                        </ul>
+                        <div class="item-count">2 items total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>225 units</td>
+                  <td>
+                    <span class="status-badge pending" id="status-REQ-2025-002"
+                      >Pending Approval</span
+                    >
+                  </td>
+                  <td>23 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn approve-btn"
+                      onclick="approveRequest('REQ-2025-002')"
+                      id="approve-REQ-2025-002"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button
+                      class="action-btn reject-btn"
+                      onclick="rejectRequest('REQ-2025-002')"
+                      id="reject-REQ-2025-002"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-002')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                <tr data-request-id="REQ-2025-003">
+                  <td><strong>#REQ-2025-003</strong></td>
+                  <td>Mike Johnson</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">Granite Stone</div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>Granite Stone - 75 units</li>
+                        </ul>
+                        <div class="item-count">1 item total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>75 units</td>
+                  <td>
+                    <span class="status-badge review" id="status-REQ-2025-003"
+                      >Under Review</span
+                    >
+                  </td>
+                  <td>22 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn approve-btn"
+                      onclick="approveRequest('REQ-2025-003')"
+                      id="approve-REQ-2025-003"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button
+                      class="action-btn reject-btn"
+                      onclick="rejectRequest('REQ-2025-003')"
+                      id="reject-REQ-2025-003"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-003')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                <tr data-request-id="REQ-2025-004">
+                  <td><strong>#REQ-2025-004</strong></td>
+                  <td>Sarah Wilson</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">
+                        Cement Blocks, Aluminum Sheets, PVC Pipes...
+                      </div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>Cement Blocks - 100 units</li>
+                          <li>Aluminum Sheets - 30 units</li>
+                          <li>PVC Pipes - 80 units</li>
+                          <li>Copper Pipes - 120 units</li>
+                          <li>Safety Equipment - 45 units</li>
+                        </ul>
+                        <div class="item-count">5 items total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>375 units</td>
+                  <td>
+                    <span class="status-badge pending" id="status-REQ-2025-004"
+                      >Pending Approval</span
+                    >
+                  </td>
+                  <td>22 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn approve-btn"
+                      onclick="approveRequest('REQ-2025-004')"
+                      id="approve-REQ-2025-004"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button
+                      class="action-btn reject-btn"
+                      onclick="rejectRequest('REQ-2025-004')"
+                      id="reject-REQ-2025-004"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-004')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                <tr data-request-id="REQ-2025-005">
+                  <td><strong>#REQ-2025-005</strong></td>
+                  <td>David Brown</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">Iron Ore</div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>Iron Ore - 200 units</li>
+                        </ul>
+                        <div class="item-count">1 item total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>200 units</td>
+                  <td>
+                    <span class="status-badge approved" id="status-REQ-2025-005"
+                      >Approved</span
+                    >
+                  </td>
+                  <td>21 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-005')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                <tr data-request-id="REQ-2025-006">
+                  <td><strong>#REQ-2025-006</strong></td>
+                  <td>Emily Davis</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">
+                        Aluminum Sheets, Tools...
+                      </div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>Aluminum Sheets - 30 units</li>
+                          <li>Safety Tools - 15 units</li>
+                          <li>Protective Gear - 25 units</li>
+                        </ul>
+                        <div class="item-count">3 items total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>70 units</td>
+                  <td>
+                    <span class="status-badge pending" id="status-REQ-2025-006"
+                      >Pending Approval</span
+                    >
+                  </td>
+                  <td>21 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn approve-btn"
+                      onclick="approveRequest('REQ-2025-006')"
+                      id="approve-REQ-2025-006"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button
+                      class="action-btn reject-btn"
+                      onclick="rejectRequest('REQ-2025-006')"
+                      id="reject-REQ-2025-006"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-006')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                <tr data-request-id="REQ-2025-007">
+                  <td><strong>#REQ-2025-007</strong></td>
+                  <td>Robert Garcia</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">Copper Pipes</div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>Copper Pipes - 120 units</li>
+                        </ul>
+                        <div class="item-count">1 item total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>120 units</td>
+                  <td>
+                    <span class="status-badge review" id="status-REQ-2025-007"
+                      >Under Review</span
+                    >
+                  </td>
+                  <td>20 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn approve-btn"
+                      onclick="approveRequest('REQ-2025-007')"
+                      id="approve-REQ-2025-007"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button
+                      class="action-btn reject-btn"
+                      onclick="rejectRequest('REQ-2025-007')"
+                      id="reject-REQ-2025-007"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-007')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+                <tr data-request-id="REQ-2025-008">
+                  <td><strong>#REQ-2025-008</strong></td>
+                  <td>Lisa Martinez</td>
+                  <td>
+                    <div class="item-display" onclick="toggleItemExpand(this)">
+                      <div class="item-abbreviated">PVC Pipes</div>
+                      <div class="item-full">
+                        <ul class="item-list">
+                          <li>PVC Pipes - 80 units</li>
+                        </ul>
+                        <div class="item-count">1 item total</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>80 units</td>
+                  <td>
+                    <span class="status-badge rejected" id="status-REQ-2025-008"
+                      >Rejected</span
+                    >
+                  </td>
+                  <td>20 Jul 2025</td>
+                  <td>
+                    <button
+                      class="action-btn view-btn"
+                      onclick="viewRequest('REQ-2025-008')"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ENHANCED Request Details Modal with Individual Approval -->
+    <div class="modal-overlay" id="requestModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="fas fa-clipboard-list"></i>
+            Request Details
+          </h3>
+          <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">Request ID</div>
+              <div class="detail-value" id="modal-request-id">
+                #REQ-2025-001
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Employee Name</div>
+              <div class="detail-value" id="modal-employee">John Doe</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Department</div>
+              <div class="detail-value" id="modal-department">Construction</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Items Requested</div>
+              <div class="detail-value" id="modal-items">Multiple Items</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Total Quantity</div>
+              <div class="detail-value" id="modal-quantity">250 units</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Priority</div>
+              <div class="detail-value" id="modal-priority">
+                <span class="priority-badge high">High</span>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Status</div>
+              <div class="detail-value" id="modal-status">
+                <span class="status-badge pending">Pending Approval</span>
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Request Date</div>
+              <div class="detail-value" id="modal-date">23 Jul 2025</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Expected Delivery</div>
+              <div class="detail-value" id="modal-delivery">25 Jul 2025</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Project Code</div>
+              <div class="detail-value" id="modal-project">PROJ-2025-089</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Estimated Cost</div>
+              <div class="detail-value" id="modal-cost">₹55,000</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Requested By</div>
+              <div class="detail-value" id="modal-requested-by">
+                Site Manager
+              </div>
+            </div>
+          </div>
+          <div class="description-box">
+            <h4>Request Description</h4>
+            <p id="modal-description">
+              Multiple items required for construction project. Premium sand for
+              concrete mixing, steel rods for reinforcement, cement blocks for
+              boundary construction, and granite stone for pathway work. All
+              items are critical for project timeline completion.
+            </p>
+          </div>
+          
+          <!-- ENHANCED Items Breakdown with Individual Approval Controls -->
+          <div class="description-box">
+            <div class="items-breakdown-header">
+              <h4>Items Breakdown & Approval</h4>
+              <div class="bulk-actions">
+                <button class="bulk-btn approve-all" onclick="approveAllItems()">
+                  <i class="fas fa-check-double"></i> Approve All
+                </button>
+                <button class="bulk-btn reject-all" onclick="rejectAllItems()">
+                  <i class="fas fa-times-circle"></i> Reject All
+                </button>
+              </div>
+            </div>
+            
+            <div class="items-approval-container" id="modal-items-breakdown">
+              <!-- Items will be populated by JavaScript -->
+            </div>
+            
+            <div class="approval-summary" id="approval-summary">
+              <div class="summary-stats">
+                <span class="stat-item">
+                  <i class="fas fa-check text-success"></i>
+                  <span id="approved-count">0</span> Approved
+                </span>
+                <span class="stat-item">
+                  <i class="fas fa-times text-danger"></i>
+                  <span id="rejected-count">0</span> Rejected
+                </span>
+                <span class="stat-item">
+                  <i class="fas fa-clock text-warning"></i>
+                  <span id="pending-count">4</span> Pending
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="modal-btn success"
+            onclick="finalizeRequest()"
+            id="finalize-btn"
+          >
+            <i class="fas fa-save"></i>
+            Finalize Request
+          </button>
+          <button class="modal-btn secondary" onclick="closeModal()">
+            <i class="fas fa-arrow-left"></i>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-notification" id="toast">
+      <i class="fas fa-check-circle"></i>
+      Welcome to Enhanced Inventory Dashboard!
+    </div>
+
+    <script src="/Js/script.js"></script>
+  </body>
+</html>

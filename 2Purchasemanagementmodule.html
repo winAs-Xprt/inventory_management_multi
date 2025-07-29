@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purchase Management - Super Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./Style/2Purchasemanagementmodule.css" />
+  </head>
+  <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Compact Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <i class="fas fa-gem"></i>
+          <span class="logo-text">Multi Ecom</span>
+        </a>
+      </div>
+
+      <div class="search-container">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search..."
+          id="searchInput"
+        />
+      </div>
+
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">
+              <i class="fas fa-chart-pie"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2ProductmanagemntModule.html" class="nav-link">
+              <i class="fas fa-box"></i>
+              <span>Products</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2StockManagementModule.html" class="nav-link">
+              <i class="fas fa-warehouse"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2Purchasemanagementmodule.html" class="nav-link active">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Purchase</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2VendorManagementModule.html" class="nav-link">
+              <i class="fas fa-store"></i>
+              <span>Vendor</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="user-profile">
+        <div class="user-avatar">AM</div>
+        <div class="user-info">
+          <div class="user-name">Admin Manager</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </aside>
+
+    <div class="dashboard-container">
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <header class="header animate-fade-in">
+          <div class="welcome-section">
+            <h1>Purchase Management</h1>
+            <p>
+              Create and manage purchase orders, track vendor transactions, and
+              generate comprehensive purchase reports.
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="action-btn success" onclick="openCreatePOModal()">
+              <i class="fas fa-plus"></i>
+              Create Purchase Order
+            </button>
+            <button
+              class="action-btn secondary"
+              onclick="exportPurchaseReport('excel')"
+            >
+              <i class="fas fa-file-excel"></i>
+              Export Excel
+            </button>
+            <button
+              class="action-btn warning"
+              onclick="exportPurchaseReport('pdf')"
+            >
+              <i class="fas fa-file-pdf"></i>
+              Export PDF
+            </button>
+            <button class="action-btn" onclick="refreshPurchaseData()">
+              <i class="fas fa-refresh"></i>
+              Refresh
+            </button>
+          </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card animate-fade-in pulse-animation">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-file-invoice"></i>
+                Total Purchase Orders
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="totalPOs">24</div>
+            <div class="stat-change positive">
+              <i class="fas fa-plus"></i>
+              +6 this month
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in pulse-animation">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-clock"></i>
+                Pending Orders
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="pendingPOs">8</div>
+            <div class="stat-change warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              Needs approval
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in pulse-animation">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-rupee-sign"></i>
+                Total Purchase Value
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="totalValue">₹8.5L</div>
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              +22% from last month
+            </div>
+          </div>
+
+          <div class="stat-card animate-fade-in pulse-animation">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-chart-line"></i>
+                This Month
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="monthlyValue">₹3.2L</div>
+            <div class="stat-change positive">
+              <i class="fas fa-check"></i>
+              On track
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Section - WITH HIGHER Z-INDEX FOR DROPDOWNS -->
+        <div class="filter-section animate-fade-in" style="position: relative; z-index: 100;">
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label class="filter-label">Search Purchase Orders</label>
+              <input
+                type="text"
+                class="filter-input"
+                id="searchPO"
+                placeholder="Search by PO number, vendor, or product..."
+              />
+            </div>
+            
+            <!-- VENDOR SEARCH FILTER WITH HIGHER Z-INDEX -->
+            <div class="filter-group">
+              <label class="filter-label">Vendor</label>
+              <div style="position: relative; width: 100%;">
+                <input
+                  type="text"
+                  class="filter-input"
+                  id="filterVendor"
+                  placeholder="Search vendors..."
+                  autocomplete="off"
+                  oninput="filterVendorSuggestions(this.value)"
+                  onfocus="showVendorSuggestions()"
+                  onblur="setTimeout(hideVendorSuggestions, 200)"
+                  style="padding-right: 30px;"
+                />
+                <i class="fas fa-search" style="
+                  position: absolute;
+                  right: 8px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  color: #64748b;
+                  font-size: 10px;
+                  pointer-events: none;
+                "></i>
+                <div id="vendorSuggestions" style="
+                  position: absolute;
+                  top: 100%;
+                  left: 0;
+                  right: 0;
+                  background: #ffffff;
+                  border: 1px solid #e2e8f0;
+                  border-top: none;
+                  border-radius: 0 0 5px 5px;
+                  max-height: 200px;
+                  overflow-y: auto;
+                  z-index: 9999;
+                  display: none;
+                  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+                ">
+                  <div class="filter-suggestion" data-value="" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectVendor('')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    All Vendors
+                  </div>
+                  <div class="filter-suggestion" data-value="ABC Suppliers" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectVendor('ABC Suppliers')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    ABC Suppliers
+                  </div>
+                  <div class="filter-suggestion" data-value="TechCorp Industries" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectVendor('TechCorp Industries')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    TechCorp Industries
+                  </div>
+                  <div class="filter-suggestion" data-value="OfficeMax Solutions" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectVendor('OfficeMax Solutions')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    OfficeMax Solutions
+                  </div>
+                  <div class="filter-suggestion" data-value="Industrial Hardware Co." style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectVendor('Industrial Hardware Co.')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Industrial Hardware Co.
+                  </div>
+                  <div class="filter-suggestion" data-value="PrintPack Materials" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectVendor('PrintPack Materials')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    PrintPack Materials
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Status</label>
+              <select class="filter-select" id="filterStatus">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="received">Received</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <!-- PRODUCT CATEGORY SEARCH FILTER WITH HIGHER Z-INDEX -->
+            <div class="filter-group">
+              <label class="filter-label">Product Category</label>
+              <div style="position: relative; width: 100%;">
+                <input
+                  type="text"
+                  class="filter-input"
+                  id="filterProduct"
+                  placeholder="Search products..."
+                  autocomplete="off"
+                  oninput="filterProductSuggestions(this.value)"
+                  onfocus="showProductSuggestions()"
+                  onblur="setTimeout(hideProductSuggestions, 200)"
+                  style="padding-right: 30px;"
+                />
+                <i class="fas fa-search" style="
+                  position: absolute;
+                  right: 8px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  color: #64748b;
+                  font-size: 10px;
+                  pointer-events: none;
+                "></i>
+                <div id="productSuggestions" style="
+                  position: absolute;
+                  top: 100%;
+                  left: 0;
+                  right: 0;
+                  background: #ffffff;
+                  border: 1px solid #e2e8f0;
+                  border-top: none;
+                  border-radius: 0 0 5px 5px;
+                  max-height: 200px;
+                  overflow-y: auto;
+                  z-index: 9999;
+                  display: none;
+                  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+                ">
+                  <div class="filter-suggestion" data-value="" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    All Products
+                  </div>
+                  <div class="filter-suggestion" data-value="Laptops" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Laptops')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Laptops
+                  </div>
+                  <div class="filter-suggestion" data-value="Office Supplies" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Office Supplies')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Office Supplies
+                  </div>
+                  <div class="filter-suggestion" data-value="Furniture" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Furniture')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Furniture
+                  </div>
+                  <div class="filter-suggestion" data-value="Hardware" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Hardware')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Hardware
+                  </div>
+                  <div class="filter-suggestion" data-value="Stationery" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Stationery')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Stationery
+                  </div>
+                  <div class="filter-suggestion" data-value="Network Equipment" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Network Equipment')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Network Equipment
+                  </div>
+                  <div class="filter-suggestion" data-value="Safety Equipment" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f1f5f9;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Safety Equipment')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Safety Equipment
+                  </div>
+                  <div class="filter-suggestion" data-value="Printing Materials" style="
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    color: #1e293b;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                  " onclick="selectProduct('Printing Materials')" 
+                     onmouseover="this.style.backgroundColor='#f1f5f9'" 
+                     onmouseout="this.style.backgroundColor='transparent'">
+                    Printing Materials
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Date From</label>
+              <input type="date" class="filter-input" id="dateFrom" />
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Date To</label>
+              <input type="date" class="filter-input" id="dateTo" />
+            </div>
+            <div class="filter-group">
+              <button class="action-btn" onclick="applyFilters()">
+                <i class="fas fa-filter"></i>
+                Apply Filters
+              </button>
+            </div>
+            <div class="filter-group">
+              <button class="action-btn secondary" onclick="clearFilters()">
+                <i class="fas fa-times"></i>
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase Orders Table - LOWER Z-INDEX -->
+        <div class="purchase-table-container animate-fade-in" style="position: relative; z-index: 1;">
+          <div class="table-header">
+            <div class="table-title">
+              <i class="fas fa-shopping-cart"></i>
+              Purchase Orders Directory
+            </div>
+            <div class="table-actions">
+              <button class="action-btn" onclick="bulkPOActions()">
+                <i class="fas fa-check-square"></i>
+                Bulk Actions
+              </button>
+              <button class="action-btn secondary" onclick="printPOReport()">
+                <i class="fas fa-print"></i>
+                Print Report
+              </button>
+            </div>
+          </div>
+
+          <div class="table-content" id="purchaseTableContent">
+            <table id="purchaseTable">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      id="selectAll"
+                      onchange="toggleSelectAll()"
+                    />
+                  </th>
+                  <th>PO NUMBER</th>
+                  <th>PURCHASE DATE</th>
+                  <th>VENDOR</th>
+                  <th>PRODUCTS</th>
+                  <th>TOTAL PRICE</th>
+                  <th>STATUS</th>
+                  <th>INVOICE/RECEIPT</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="purchaseTableBody">
+                <!-- Table content will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination" id="pagination">
+            <!-- Pagination will be populated by JavaScript -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Create/Edit Purchase Order Modal -->
+    <div class="modal" id="purchaseModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modalTitle">Create Purchase Order</h2>
+          <button class="modal-close" onclick="closePurchaseModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="purchaseForm">
+            <div class="form-grid">
+              <!-- Purchase Order Information -->
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fas fa-file-invoice"></i>
+                  Purchase Order Details
+                </div>
+                <div class="form-group">
+                  <label class="form-label">PO Number *</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="poNumber"
+                    placeholder="PO-2025-001"
+                    required
+                    readonly
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Purchase Date *</label>
+                  <input
+                    type="date"
+                    class="form-input"
+                    id="purchaseDate"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Expected Delivery Date</label>
+                  <input type="date" class="form-input" id="expectedDate" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Priority</label>
+                  <select class="form-select" id="priority">
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Vendor Information -->
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fas fa-truck"></i>
+                  Vendor Information
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Select Vendor *</label>
+                  <select
+                    class="form-select"
+                    id="vendorSelect"
+                    required
+                    onchange="updateVendorInfo()"
+                  >
+                    <option value="">Choose Vendor</option>
+                    <option
+                      value="1"
+                      data-contact="+91-9876543210"
+                      data-email="vendor@abcsuppliers.com"
+                    >
+                      ABC Suppliers
+                    </option>
+                    <option
+                      value="2"
+                      data-contact="+91-9876543211"
+                      data-email="sales@techcorp.in"
+                    >
+                      TechCorp Industries
+                    </option>
+                    <option
+                      value="3"
+                      data-contact="+91-9876543212"
+                      data-email="info@officemax.co.in"
+                    >
+                      OfficeMax Solutions
+                    </option>
+                    <option
+                      value="4"
+                      data-contact="+91-9876543213"
+                      data-email="orders@industrialhw.com"
+                    >
+                      Industrial Hardware Co.
+                    </option>
+                    <option
+                      value="5"
+                      data-contact="+91-9876543214"
+                      data-email="sales@printpack.in"
+                    >
+                      PrintPack Materials
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Contact Number</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="vendorContact"
+                    readonly
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-input"
+                    id="vendorEmail"
+                    readonly
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Payment Terms</label>
+                  <select class="form-select" id="paymentTerms">
+                    <option value="net30">Net 30 days</option>
+                    <option value="net15">Net 15 days</option>
+                    <option value="cod">Cash on Delivery</option>
+                    <option value="advance">Advance Payment</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Products Section -->
+              <div class="form-section products-section">
+                <div class="form-section-title">
+                  <i class="fas fa-boxes"></i>
+                  Products & Items
+                  <button
+                    type="button"
+                    class="add-product-btn"
+                    onclick="addProductItem()"
+                  >
+                    <i class="fas fa-plus"></i>
+                    Add Product
+                  </button>
+                </div>
+                <div id="productsContainer">
+                  <!-- Product items will be added dynamically -->
+                </div>
+                <div class="total-calculation" id="totalCalculation">
+                  <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">₹0.00</span>
+                  </div>
+                  <div class="total-row">
+                    <span>Tax (18% GST):</span>
+                    <span id="taxAmount">₹0.00</span>
+                  </div>
+                  <div class="total-row">
+                    <span>Total Amount:</span>
+                    <span id="totalAmount">₹0.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional Information -->
+              <div class="form-section" style="grid-column: 1 / -1">
+                <div class="form-section-title">
+                  <i class="fas fa-sticky-note"></i>
+                  Additional Information
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Special Instructions / Notes</label>
+                  <textarea
+                    class="form-textarea"
+                    id="specialNotes"
+                    placeholder="Enter any special delivery instructions, quality requirements, or additional notes..."
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Delivery Address</label>
+                  <textarea
+                    class="form-textarea"
+                    id="deliveryAddress"
+                    placeholder="Enter delivery address if different from company address..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="action-btn secondary" onclick="closePurchaseModal()">
+            Cancel
+          </button>
+          <button class="action-btn" onclick="saveDraft()">
+            <i class="fas fa-save"></i>
+            Save as Draft
+          </button>
+          <button class="action-btn success" onclick="savePurchaseOrder()">
+            <i class="fas fa-check"></i>
+            Create Purchase Order
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Purchase Order Details Modal -->
+    <div class="modal" id="viewModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="viewModalTitle">
+            Purchase Order Details
+          </h2>
+          <button class="modal-close" onclick="closeViewModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body" id="viewContent">
+          <!-- View content will be populated by JavaScript -->
+          <!-- Star rating for PO will be injected by JS -->
+          <div id="poRatingContainer"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="action-btn secondary" onclick="closeViewModal()">
+            Close
+          </button>
+          <button class="action-btn warning" onclick="printPO()" id="printBtn">
+            <i class="fas fa-print"></i>
+            Print PO
+          </button>
+          <button class="action-btn" onclick="downloadPO()" id="downloadBtn">
+            <i class="fas fa-download"></i>
+            Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vendor Stock Details Modal -->
+    <div class="modal" id="vendorStockModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="vendorStockModalTitle">
+            Vendor Stock History
+          </h2>
+          <button class="modal-close" onclick="closeVendorStockModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="vendorStockContent">
+          <!-- Vendor stock content will be populated by JavaScript -->
+        </div>
+        <div class="modal-footer">
+          <button class="action-btn secondary" onclick="closeVendorStockModal()">
+            Close
+          </button>
+          <button class="action-btn" onclick="exportVendorReport()">
+            <i class="fas fa-file-export"></i>
+            Export Report
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div class="custom-confirm" id="customConfirm">
+      <div class="confirm-content">
+        <div class="confirm-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="confirm-title" id="confirmTitle">Confirm Action</h3>
+        <p class="confirm-message" id="confirmMessage">
+          Are you sure you want to proceed with this action?
+        </p>
+        <div class="confirm-actions">
+          <button
+            class="confirm-btn secondary"
+            onclick="hideCustomConfirm(false)"
+          >
+            Cancel
+          </button>
+          <button class="confirm-btn primary" onclick="hideCustomConfirm(true)">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-notification" id="toast">
+      <i class="fas fa-check-circle"></i>
+      <span id="toastMessage">Operation completed successfully!</span>
+    </div>
+
+    <!-- INLINE JAVASCRIPT FOR SEARCH DROPDOWN FUNCTIONALITY -->
+    <script>
+      // Vendor suggestions functions
+      function showVendorSuggestions() {
+        document.getElementById('vendorSuggestions').style.display = 'block';
+      }
+
+      function hideVendorSuggestions() {
+        document.getElementById('vendorSuggestions').style.display = 'none';
+      }
+
+      function filterVendorSuggestions(value) {
+        const suggestions = document.querySelectorAll('#vendorSuggestions .filter-suggestion');
+        const searchTerm = value.toLowerCase();
+
+        suggestions.forEach(suggestion => {
+          const text = suggestion.textContent.toLowerCase();
+          if (text.includes(searchTerm) || searchTerm === '') {
+            suggestion.style.display = 'block';
+          } else {
+            suggestion.style.display = 'none';
+          }
+        });
+
+        showVendorSuggestions();
+      }
+
+      function selectVendor(value) {
+        document.getElementById('filterVendor').value = value;
+        hideVendorSuggestions();
+        // Auto-apply filters when selection is made
+        if (typeof applyFilters === 'function') applyFilters();
+      }
+
+      // Product suggestions functions
+      function showProductSuggestions() {
+        document.getElementById('productSuggestions').style.display = 'block';
+      }
+
+      function hideProductSuggestions() {
+        document.getElementById('productSuggestions').style.display = 'none';
+      }
+
+      function filterProductSuggestions(value) {
+        const suggestions = document.querySelectorAll('#productSuggestions .filter-suggestion');
+        const searchTerm = value.toLowerCase();
+
+        suggestions.forEach(suggestion => {
+          const text = suggestion.textContent.toLowerCase();
+          if (text.includes(searchTerm) || searchTerm === '') {
+            suggestion.style.display = 'block';
+          } else {
+            suggestion.style.display = 'none';
+          }
+        });
+
+        showProductSuggestions();
+      }
+
+      function selectProduct(value) {
+        document.getElementById('filterProduct').value = value;
+        hideProductSuggestions();
+        // Auto-apply filters when selection is made
+        if (typeof applyFilters === 'function') applyFilters();
+      }
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#filterVendor') && !e.target.closest('#vendorSuggestions')) {
+          hideVendorSuggestions();
+        }
+        if (!e.target.closest('#filterProduct') && !e.target.closest('#productSuggestions')) {
+          hideProductSuggestions();
+        }
+      });
+    </script>
+
+    <script src="/Js/2Purchasemanagementmodule.js"></script>
+  </body>
+</html>

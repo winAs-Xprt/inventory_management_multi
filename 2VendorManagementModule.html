@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendor Management - Super Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./Style/2VendorManagementModule.css" />
+  </head>
+  <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar - Unchanged as requested -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <i class="fas fa-gem"></i>
+          <span class="logo-text">Multi Ecom</span>
+        </a>
+      </div>
+
+      <div class="search-container">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search..."
+          id="searchInput"
+        />
+      </div>
+
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">
+              <i class="fas fa-chart-pie"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2ProductmanagemntModule.html" class="nav-link">
+              <i class="fas fa-box"></i>
+              <span>Products</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2StockManagementModule.html" class="nav-link">
+              <i class="fas fa-warehouse"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2Purchasemanagementmodule.html" class="nav-link">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Purchase</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2VendorManagementModule.html" class="nav-link active">
+              <i class="fas fa-store"></i>
+              <span>Vendor</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="user-profile">
+        <div class="user-avatar">AM</div>
+        <div class="user-info">
+          <div class="user-name">Admin Manager</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div class="vendor-management-content">
+        <header class="header animate-fade-in">
+          <div class="welcome-section">
+            <h1>Vendor Management</h1>
+            <p>
+              Manage vendor profiles, track stock supplies with comprehensive controls.
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="action-btn success" onclick="openAddVendorModal()">
+              <i class="fas fa-plus"></i>
+              Add New Vendor
+            </button>
+            <button
+              class="action-btn secondary"
+              onclick="exportVendorReport('excel')"
+            >
+              <i class="fas fa-file-excel"></i>
+              Export Excel
+            </button>
+            <button
+              class="action-btn warning"
+              onclick="exportVendorReport('pdf')"
+            >
+              <i class="fas fa-file-pdf"></i>
+              Export PDF
+            </button>
+            <button class="action-btn" onclick="refreshVendorData()">
+              <i class="fas fa-refresh"></i>
+              Refresh
+            </button>
+          </div>
+        </header>
+
+        <!-- Filter Section - UPDATED WITH HIGHER Z-INDEX DROPDOWNS -->
+        <div class="filter-section animate-fade-in" style="position: relative; z-index: 100;">
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label class="filter-label">Search Vendors</label>
+              <input
+                type="text"
+                class="filter-input"
+                id="searchVendor"
+                placeholder="Search by name, contact, or GST..."
+              />
+            </div>
+
+            <!-- UPDATED: Product Category Search Filter with Higher Z-Index -->
+            <div class="filter-group">
+              <label class="filter-label">Product Category</label>
+              <div style="position:relative;width:100%;">
+                <input id="filterCategory" type="text" class="filter-input"
+                       placeholder="Search categories..." autocomplete="off"
+                       style="padding-right:30px;"
+                       oninput="filterCategorySuggestions(this.value)"
+                       onfocus="showCategorySuggestions()"
+                       onblur="setTimeout(hideCategorySuggestions,200)" />
+                <i class="fas fa-search" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                   color:#64748b;font-size:10px;pointer-events:none;"></i>
+
+                <!-- Category Suggestions Dropdown - HIGHER Z-INDEX -->
+                <div id="categorySuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;
+                     background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 5px 5px;
+                     max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+                  <div data-value="" onclick="selectCategory('')" 
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">All Categories</div>
+                  <div data-value="electronics" onclick="selectCategory('electronics')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Electronics</div>
+                  <div data-value="office-supplies" onclick="selectCategory('office-supplies')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Office Supplies</div>
+                  <div data-value="furniture" onclick="selectCategory('furniture')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Furniture</div>
+                  <div data-value="hardware" onclick="selectCategory('hardware')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Hardware</div>
+                  <div data-value="raw-materials" onclick="selectCategory('raw-materials')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Raw Materials</div>
+                  <div data-value="packaging" onclick="selectCategory('packaging')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Packaging</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Vendor Status</label>
+              <select class="filter-select" id="filterStatus">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <!-- UPDATED: Location Search Filter with Higher Z-Index -->
+            <div class="filter-group">
+              <label class="filter-label">Location</label>
+              <div style="position:relative;width:100%;">
+                <input id="filterLocation" type="text" class="filter-input"
+                       placeholder="Search locations..." autocomplete="off"
+                       style="padding-right:30px;"
+                       oninput="filterLocationSuggestions(this.value)"
+                       onfocus="showLocationSuggestions()"
+                       onblur="setTimeout(hideLocationSuggestions,200)" />
+                <i class="fas fa-search" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                   color:#64748b;font-size:10px;pointer-events:none;"></i>
+
+                <!-- Location Suggestions Dropdown - HIGHER Z-INDEX -->
+                <div id="locationSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;
+                     background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 5px 5px;
+                     max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+                  <div data-value="" onclick="selectLocation('')" 
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">All Locations</div>
+                  <div data-value="chennai" onclick="selectLocation('chennai')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Chennai</div>
+                  <div data-value="bangalore" onclick="selectLocation('bangalore')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Bangalore</div>
+                  <div data-value="mumbai" onclick="selectLocation('mumbai')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Mumbai</div>
+                  <div data-value="delhi" onclick="selectLocation('delhi')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Delhi</div>
+                  <div data-value="pune" onclick="selectLocation('pune')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Pune</div>
+                  <div data-value="hyderabad" onclick="selectLocation('hyderabad')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Hyderabad</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Registration From</label>
+              <input type="date" class="filter-input" id="dateFrom" />
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Registration To</label>
+              <input type="date" class="filter-input" id="dateTo" />
+            </div>
+            <div class="filter-group">
+              <button class="action-btn" onclick="applyFilters()">
+                <i class="fas fa-filter"></i>
+                Apply Filters
+              </button>
+            </div>
+            <div class="filter-group">
+              <button class="action-btn secondary" onclick="clearFilters()">
+                <i class="fas fa-times"></i>
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vendor Table - LOWER Z-INDEX -->
+        <div class="vendor-table-container animate-fade-in" style="position: relative; z-index: 1;">
+          <div class="table-header">
+            <div class="table-title">
+              <i class="fas fa-building"></i>
+              Vendor Directory
+            </div>
+            <div class="table-actions">
+              <button class="action-btn" onclick="bulkVendorActions()">
+                <i class="fas fa-check-square"></i>
+                Bulk Actions
+              </button>
+              <button
+                class="action-btn secondary"
+                onclick="printVendorReport()"
+              >
+                <i class="fas fa-print"></i>
+                Print Report
+              </button>
+            </div>
+          </div>
+
+          <div class="table-content" id="vendorTableContent">
+            <table id="vendorTable">
+              <thead>
+                <tr>
+                  <th>
+                    <input 
+                      type="checkbox"
+                      id="selectAll"
+                      onchange="toggleSelectAll()"
+                    />
+                  </th>
+                  <th>AVATAR</th>
+                  <th>VENDOR NAME</th>
+                  <th>CONTACT</th>
+                  <th>EMAIL</th>
+                  <th>LOCATION</th>
+                  <th>GST / TAX ID</th>
+                  <th>PRODUCTS SUPPLIED</th>
+                  <th>PENDING STOCK</th>
+                  <th>STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="vendorTableBody">
+                <!-- Table content will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination" id="pagination">
+            <!-- Pagination will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Add/Edit Vendor Modal -->
+    <div class="modal" id="vendorModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modalTitle">Add New Vendor</h2>
+          <button class="modal-close" onclick="closeVendorModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="vendorForm">
+            <div class="form-grid">
+              <!-- Vendor Information Section -->
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fas fa-building"></i>
+                  Vendor Information
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Vendor Name *</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="vendorName"
+                    placeholder="Enter vendor name"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Contact Number *</label>
+                  <input
+                    type="tel"
+                    class="form-input"
+                    id="vendorContact"
+                    placeholder="+91-9876543210"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Email Address *</label>
+                  <input
+                    type="email"
+                    class="form-input"
+                    id="vendorEmail"
+                    placeholder="vendor@company.com"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Address *</label>
+                  <textarea
+                    class="form-textarea"
+                    id="vendorAddress"
+                    placeholder="Enter complete address"
+                    required
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">City/Location *</label>
+                  <select class="form-select" id="vendorLocation" required>
+                    <option value="">Select Location</option>
+                    <option value="chennai">Chennai</option>
+                    <option value="bangalore">Bangalore</option>
+                    <option value="mumbai">Mumbai</option>
+                    <option value="delhi">Delhi</option>
+                    <option value="pune">Pune</option>
+                    <option value="hyderabad">Hyderabad</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Business & Financial Details Section -->
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fas fa-file-invoice-dollar"></i>
+                  Business & Financial Details
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">GST / Tax ID *</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="vendorGST"
+                    placeholder="33AAAPL1234C1Z9"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">PAN Number</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="vendorPAN"
+                    placeholder="AAAPL1234C"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Bank Account Number</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="vendorAccount"
+                    placeholder="Account number"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">IFSC Code</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="vendorIFSC"
+                    placeholder="HDFC0000123"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Credit Period (Days)</label>
+                  <input
+                    type="number"
+                    class="form-input"
+                    id="creditPeriod"
+                    placeholder="30"
+                    min="0"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Credit Limit (₹)</label>
+                  <input
+                    type="number"
+                    class="form-input"
+                    id="creditLimit"
+                    placeholder="100000"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <!-- Products & Services Section -->
+              <div class="form-section" style="grid-column: 1 / -1">
+                <div class="form-section-title">
+                  <i class="fas fa-boxes"></i>
+                  Products & Services
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Products Supplied *</label>
+                  <div class="product-tags-input" id="productTagsContainer">
+                    <input
+                      type="text"
+                      class="tag-input"
+                      id="productTagInput"
+                      placeholder="Type product and press Enter..."
+                    />
+                  </div>
+                  <small style="color: var(--text-muted); font-size: 10px"
+                    >Press Enter to add each product</small
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Primary Category</label>
+                  <select class="form-select" id="vendorCategory">
+                    <option value="">Select Category</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="office-supplies">Office Supplies</option>
+                    <option value="furniture">Furniture</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="raw-materials">Raw Materials</option>
+                    <option value="packaging">Packaging</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Registration Date</label>
+                  <input type="date" class="form-input" id="registrationDate" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select class="form-select" id="vendorStatus">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Notes</label>
+                  <textarea
+                    class="form-textarea"
+                    id="vendorNotes"
+                    placeholder="Additional notes about vendor..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="action-btn secondary" onclick="closeVendorModal()">
+            Cancel
+          </button>
+          <button class="action-btn success" onclick="saveVendor()">
+            <i class="fas fa-save"></i>
+            Save Vendor
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Stock Modal -->
+    <div class="modal" id="stockModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="stockModalTitle">Vendor Stock Details</h2>
+          <button class="modal-close" onclick="closeStockModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="stockContent">
+          <!-- Stock content will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div class="custom-confirm" id="customConfirm">
+      <div class="confirm-content">
+        <div class="confirm-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="confirm-title" id="confirmTitle">Confirm Action</h3>
+        <p class="confirm-message" id="confirmMessage">
+          Are you sure you want to proceed with this action?
+        </p>
+        <div class="confirm-actions">
+          <button
+            class="confirm-btn secondary"
+            onclick="hideCustomConfirm(false)"
+          >
+            Cancel
+          </button>
+          <button class="confirm-btn primary" onclick="hideCustomConfirm(true)">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-notification" id="toast">
+      <i class="fas fa-check-circle"></i>
+      <span id="toastMessage">Operation completed successfully!</span>
+    </div>
+
+    <!-- JAVASCRIPT FOR SEARCH DROPDOWN FUNCTIONALITY -->
+    <script>
+      /* ===== CATEGORY FILTER FUNCTIONS ===== */
+      function showCategorySuggestions() {
+        document.getElementById('categorySuggestions').style.display = 'block';
+      }
+      function hideCategorySuggestions() {
+        document.getElementById('categorySuggestions').style.display = 'none';
+      }
+      function filterCategorySuggestions(val) {
+        const box = document.getElementById('categorySuggestions');
+        const items = box.querySelectorAll('[data-value]');
+        const q = val.trim().toLowerCase();
+        let any = false;
+        items.forEach(it => {
+          const text = it.textContent.toLowerCase();
+          const match = text.includes(q) || it.dataset.value === '';
+          it.style.display = match ? 'block' : 'none';
+          if (match) any = true;
+        });
+        box.style.display = any ? 'block' : 'none';
+      }
+      function selectCategory(v) {
+        const displayText = v === '' ? '' : document.querySelector(`#categorySuggestions [data-value="${v}"]`).textContent;
+        document.getElementById('filterCategory').value = displayText;
+        hideCategorySuggestions();
+        if (typeof applyFilters === 'function') applyFilters();
+      }
+
+      /* ===== LOCATION FILTER FUNCTIONS ===== */
+      function showLocationSuggestions() {
+        document.getElementById('locationSuggestions').style.display = 'block';
+      }
+      function hideLocationSuggestions() {
+        document.getElementById('locationSuggestions').style.display = 'none';
+      }
+      function filterLocationSuggestions(val) {
+        const box = document.getElementById('locationSuggestions');
+        const items = box.querySelectorAll('[data-value]');
+        const q = val.trim().toLowerCase();
+        let any = false;
+        items.forEach(it => {
+          const text = it.textContent.toLowerCase();
+          const match = text.includes(q) || it.dataset.value === '';
+          it.style.display = match ? 'block' : 'none';
+          if (match) any = true;
+        });
+        box.style.display = any ? 'block' : 'none';
+      }
+      function selectLocation(v) {
+        const displayText = v === '' ? '' : document.querySelector(`#locationSuggestions [data-value="${v}"]`).textContent;
+        document.getElementById('filterLocation').value = displayText;
+        hideLocationSuggestions();
+        if (typeof applyFilters === 'function') applyFilters();
+      }
+
+      /* ===== CLOSE DROPDOWNS WHEN CLICKING OUTSIDE ===== */
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#filterCategory') && !e.target.closest('#categorySuggestions')) {
+          hideCategorySuggestions();
+        }
+        if (!e.target.closest('#filterLocation') && !e.target.closest('#locationSuggestions')) {
+          hideLocationSuggestions();
+        }
+      });
+    </script>
+
+    <script src="/Js/2VendorManagementModule.js"></script>
+  </body>
+</html>

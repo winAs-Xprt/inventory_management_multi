@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi Ecom Admin - Product Management</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="Style/2ProductmanagemntModule.css" />
+  </head>
+
+  <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <i class="fas fa-gem"></i>
+          <span class="logo-text">Multi Ecom</span>
+        </a>
+      </div>
+
+      <div class="search-container">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search..."
+          id="searchInput"
+        />
+      </div>
+
+      <nav>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">
+              <i class="fas fa-chart-pie"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2ProductmanagemntModule.html" class="nav-link active">
+              <i class="fas fa-box"></i>
+              <span>Products</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2StockManagementModule.html" class="nav-link">
+              <i class="fas fa-warehouse"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2Purchasemanagementmodule.html" class="nav-link">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Purchase</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="2VendorManagementModule.html" class="nav-link">
+              <i class="fas fa-store"></i>
+              <span>Vendor</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="user-profile">
+        <div class="user-avatar">AM</div>
+        <div class="user-info">
+          <div class="user-name">Admin Manager</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </aside>
+
+    <div class="dashboard-container">
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <header class="header">
+          <div class="welcome-section">
+            <h1>Product Management</h1>
+            <p>
+              Manage inventory products with comprehensive details and real-time
+              monitoring.
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-outline" onclick="openAddCategoryModal()">
+              <i class="fas fa-layer-group"></i>
+              Add Category
+            </button>
+            <button class="btn btn-success" onclick="openAddProductModal()">
+              <i class="fas fa-plus"></i>
+              Add Product
+            </button>
+            <button class="btn btn-secondary" onclick="exportProducts('excel')">
+              <i class="fas fa-file-excel"></i>
+              Excel
+            </button>
+            <button class="btn btn-warning" onclick="exportProducts('pdf')">
+              <i class="fas fa-file-pdf"></i>
+              PDF
+            </button>
+            <button class="btn btn-primary" onclick="refreshProducts()">
+              <i class="fas fa-refresh"></i>
+              Refresh
+            </button>
+          </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-cube"></i>
+                Total Products
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="totalProducts">1,247</div>
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              +23 this month
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-layer-group"></i>
+                Total Categories
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="activeCategories">18</div>
+            <div class="stat-change positive">
+              <i class="fas fa-plus"></i>
+              2 new categories
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Low Stock Items
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="lowStockItems">34</div>
+            <div class="stat-change warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              8 critical
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">
+                <i class="fas fa-chart-line"></i>
+                Total Value
+              </span>
+              <span style="color: var(--text-muted)"></span>
+            </div>
+            <div class="stat-value" id="totalValue">₹24.7L</div>
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              +8.3% value growth
+            </div>
+          </div>
+        </div>
+
+        <!-- UPDATED FILTER SECTION WITH SEARCHABLE DROPDOWNS -->
+        <div class="filter-section" style="position: relative; z-index: 100;">
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label class="filter-label">Search Products</label>
+              <input
+                type="text"
+                class="filter-input"
+                id="searchProduct"
+                placeholder="Search by name, code..."
+              />
+            </div>
+
+            <!-- Category Search Filter -->
+            <div class="filter-group">
+              <label class="filter-label">Category</label>
+              <div style="position:relative;width:100%;">
+                <input id="filterCategory" type="text" class="filter-input"
+                       placeholder="Search categories..." autocomplete="off"
+                       style="padding-right:30px;"
+                       oninput="filterCategorySuggestions(this.value)"
+                       onfocus="showCategorySuggestions()"
+                       onblur="setTimeout(hideCategorySuggestions,200)" />
+                <i class="fas fa-search" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                   color:#64748b;font-size:10px;pointer-events:none;"></i>
+
+                <div id="categorySuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;
+                     background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 5px 5px;
+                     max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+                  <div data-value="" onclick="selectCategory('')" 
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">All Categories</div>
+                  <div data-value="electronics" onclick="selectCategory('electronics')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Electronics</div>
+                  <div data-value="stationery" onclick="selectCategory('stationery')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Stationery</div>
+                  <div data-value="office-supplies" onclick="selectCategory('office-supplies')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Office Supplies</div>
+                  <div data-value="furniture" onclick="selectCategory('furniture')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Furniture</div>
+                  <div data-value="hardware" onclick="selectCategory('hardware')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Hardware</div>
+                  <div data-value="safety-equipment" onclick="selectCategory('safety-equipment')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Safety Equipment</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vendor Search Filter -->
+            <div class="filter-group">
+              <label class="filter-label">Vendor</label>
+              <div style="position:relative;width:100%;">
+                <input id="filterVendor" type="text" class="filter-input"
+                       placeholder="Search vendors..." autocomplete="off"
+                       style="padding-right:30px;"
+                       oninput="filterVendorSuggestions(this.value)"
+                       onfocus="showVendorSuggestions()"
+                       onblur="setTimeout(hideVendorSuggestions,200)" />
+                <i class="fas fa-search" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                   color:#64748b;font-size:10px;pointer-events:none;"></i>
+
+                <div id="vendorSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;
+                     background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 5px 5px;
+                     max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+                  <div data-value="" onclick="selectVendor('')" 
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">All Vendors</div>
+                  <div data-value="abc-suppliers" onclick="selectVendor('abc-suppliers')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">ABC Suppliers</div>
+                  <div data-value="xyz-materials" onclick="selectVendor('xyz-materials')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">XYZ Materials</div>
+                  <div data-value="global-trading" onclick="selectVendor('global-trading')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Global Trading</div>
+                  <div data-value="prime-vendors" onclick="selectVendor('prime-vendors')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Prime Vendors</div>
+                  <div data-value="elite-supply" onclick="selectVendor('elite-supply')"
+                       style="padding:8px 12px;font-size:10px;color:#1e293b;cursor:pointer;"
+                       onmouseover="this.style.background='#f1f5f9'" 
+                       onmouseout="this.style.background='transparent'">Elite Supply</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Stock Status</label>
+              <select class="filter-select" id="filterStock">
+                <option value="">All Stock Levels</option>
+                <option value="normal">Normal Stock</option>
+                <option value="low">Low Stock</option>
+                <option value="critical">Critical Stock</option>
+                <option value="out">Out of Stock</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Usability</label>
+              <select class="filter-select" id="filterUsability">
+                <option value="">All Usability</option>
+                <option value="high-demand">High Demand</option>
+                <option value="medium-demand">Medium Demand</option>
+                <option value="low-demand">Low Demand</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">From Date</label>
+              <input type="date" class="filter-input" id="dateFrom" />
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">To Date</label>
+              <input type="date" class="filter-input" id="dateTo" />
+            </div>
+
+            <!-- Filter Action Buttons Container -->
+            <div class="filter-actions-container">
+              <div class="filter-actions">
+                <button class="btn btn-primary" onclick="applyFilters()">
+                  <i class="fas fa-filter"></i>
+                  Apply
+                </button>
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                  <i class="fas fa-times"></i>
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Product Table -->
+        <div class="product-table-container" style="position: relative; z-index: 1;">
+          <div class="table-header">
+            <div class="table-title">
+              <i class="fas fa-list"></i>
+              Product Inventory Management
+            </div>
+            <div class="table-actions">
+              <button class="btn btn-secondary" onclick="toggleBulkMode()">
+                <i class="fas fa-check-square"></i>
+                Bulk Select
+              </button>
+              <button class="btn btn-secondary" onclick="printTable()">
+                <i class="fas fa-print"></i>
+                Print
+              </button>
+            </div>
+          </div>
+
+          <!-- Enhanced Bulk Actions Bar -->
+          <div class="bulk-actions-bar" id="bulkActionsBar">
+            <div class="bulk-info">
+              <i class="fas fa-check-square"></i>
+              <span id="selectedCount">0</span> products selected
+            </div>
+            <div class="bulk-actions">
+              <button class="btn btn-danger" onclick="bulkDelete()">
+                <i class="fas fa-trash"></i>
+                Delete Selected
+              </button>
+              <button class="btn btn-warning" onclick="bulkExport()">
+                <i class="fas fa-download"></i>
+                Export Selected
+              </button>
+              <button class="btn btn-secondary" onclick="clearSelection()">
+                <i class="fas fa-times"></i>
+                Clear Selection
+              </button>
+            </div>
+          </div>
+
+          <div class="table-content" id="productTableContent">
+            <table id="productTable">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      id="selectAll"
+                      onchange="toggleSelectAll()"
+                    />
+                  </th>
+                  <th>Image</th>
+                  <th>Product Name</th>
+                  <th>Category</th>
+                  <th>SKU/Code</th>
+                  <th>Current Stock</th>
+                  <th>Min. Qty</th>
+                  <th>Unit</th>
+                  <th>Price</th>
+                  <th>Vendor</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody">
+                <!-- Table content will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- UPDATED PRODUCT MODAL WITH SEARCHABLE DROPDOWNS -->
+    <div class="modal-overlay" id="productModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">
+            <i class="fas fa-plus"></i>
+            Add New Product
+          </h3>
+          <button class="modal-close" onclick="closeProductModal()">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="productForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label required">Product Name</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="productName"
+                  placeholder="Enter product name"
+                  required
+                />
+                <div class="form-error" id="productNameError">
+                  Product name is required
+                </div>
+              </div>
+
+              <!-- UPDATED: Category Search Dropdown in Modal -->
+              <div class="form-group">
+                <label class="form-label required">Category</label>
+                <div style="position:relative;width:100%;">
+                  <input id="productCategory" type="text" class="form-input"
+                         placeholder="Search and select category..." autocomplete="off"
+                         style="padding-right:30px;"
+                         oninput="filterModalCategorySuggestions(this.value)"
+                         onfocus="showModalCategorySuggestions()"
+                         onblur="setTimeout(hideModalCategorySuggestions,200)"
+                         required />
+                  <i class="fas fa-search" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                     color:#64748b;font-size:12px;pointer-events:none;"></i>
+
+                  <div id="modalCategorySuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;
+                       background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 5px 5px;
+                       max-height:200px;overflow-y:auto;z-index:10000;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+                    <div data-value="electronics" onclick="selectModalCategory('electronics')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Electronics</div>
+                    <div data-value="stationery" onclick="selectModalCategory('stationery')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Stationery</div>
+                    <div data-value="office-supplies" onclick="selectModalCategory('office-supplies')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Office Supplies</div>
+                    <div data-value="furniture" onclick="selectModalCategory('furniture')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Furniture</div>
+                    <div data-value="hardware" onclick="selectModalCategory('hardware')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Hardware</div>
+                    <div data-value="safety-equipment" onclick="selectModalCategory('safety-equipment')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Safety Equipment</div>
+                  </div>
+                </div>
+                <div class="form-error" id="productCategoryError">
+                  Category is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">SKU/Code</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="productCode"
+                  placeholder="Auto-generated"
+                  required
+                />
+                <div class="form-error" id="productCodeError">
+                  Product code is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Brand</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="productBrand"
+                  placeholder="Enter brand name"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">Current Stock</label>
+                <input
+                  type="number"
+                  class="form-input"
+                  id="productStock"
+                  placeholder="Enter current stock"
+                  min="0"
+                  required
+                />
+                <div class="form-error" id="productStockError">
+                  Current stock is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">Minimum Quantity</label>
+                <input
+                  type="number"
+                  class="form-input"
+                  id="productMinQty"
+                  placeholder="Enter minimum quantity"
+                  min="0"
+                  required
+                />
+                <div class="form-error" id="productMinQtyError">
+                  Minimum quantity is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">Unit</label>
+                <select class="form-select" id="productUnit" required>
+                  <option value="">Select Unit</option>
+                  <option value="piece">Piece</option>
+                  <option value="pack">Pack</option>
+                  <option value="box">Box</option>
+                  <option value="kg">Kilogram</option>
+                  <option value="liter">Liter</option>
+                  <option value="meter">Meter</option>
+                  <option value="set">Set</option>
+                  <option value="kit">Kit</option>
+                </select>
+                <div class="form-error" id="productUnitError">
+                  Unit is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">Purchase Price</label>
+                <input
+                  type="number"
+                  class="form-input"
+                  id="productPrice"
+                  placeholder="Enter purchase price"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+                <div class="form-error" id="productPriceError">
+                  Purchase price is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Selling Price</label>
+                <input
+                  type="number"
+                  class="form-input"
+                  id="productSellingPrice"
+                  placeholder="Enter selling price"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              <!-- UPDATED: Vendor Search Dropdown in Modal -->
+              <div class="form-group">
+                <label class="form-label required">Vendor</label>
+                <div style="position:relative;width:100%;">
+                  <input id="productVendor" type="text" class="form-input"
+                         placeholder="Search and select vendor..." autocomplete="off"
+                         style="padding-right:30px;"
+                         oninput="filterModalVendorSuggestions(this.value)"
+                         onfocus="showModalVendorSuggestions()"
+                         onblur="setTimeout(hideModalVendorSuggestions,200)"
+                         required />
+                  <i class="fas fa-search" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                     color:#64748b;font-size:12px;pointer-events:none;"></i>
+
+                  <div id="modalVendorSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;
+                       background:#ffffff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 5px 5px;
+                       max-height:200px;overflow-y:auto;z-index:10000;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);">
+                    <div data-value="abc-suppliers" onclick="selectModalVendor('abc-suppliers')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">ABC Suppliers</div>
+                    <div data-value="xyz-materials" onclick="selectModalVendor('xyz-materials')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">XYZ Materials</div>
+                    <div data-value="global-trading" onclick="selectModalVendor('global-trading')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Global Trading</div>
+                    <div data-value="prime-vendors" onclick="selectModalVendor('prime-vendors')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;border-bottom:1px solid #f1f5f9;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Prime Vendors</div>
+                    <div data-value="elite-supply" onclick="selectModalVendor('elite-supply')"
+                         style="padding:10px 12px;font-size:12px;color:#1e293b;cursor:pointer;"
+                         onmouseover="this.style.background='#f1f5f9'" 
+                         onmouseout="this.style.background='transparent'">Elite Supply</div>
+                  </div>
+                </div>
+                <div class="form-error" id="productVendorError">
+                  Vendor is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Storage Location</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="productLocation"
+                  placeholder="Enter storage location"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Expiry Date</label>
+                <input type="date" class="form-input" id="productExpiry" />
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">Description</label>
+                <textarea
+                  class="form-textarea"
+                  id="productDescription"
+                  placeholder="Enter product description"
+                ></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="modal-btn secondary" onclick="closeProductModal()">
+            <i class="fas fa-times"></i>
+            Cancel
+          </button>
+          <button
+            class="modal-btn primary"
+            onclick="saveProduct()"
+            id="saveProductBtn"
+          >
+            <i class="fas fa-save"></i>
+            Save Product
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal-overlay" id="categoryModal">
+      <div class="modal-content" style="max-width: 500px">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="fas fa-layer-group"></i>
+            Add New Category
+          </h3>
+          <button class="modal-close" onclick="closeCategoryModal()">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="categoryForm">
+            <div class="form-group">
+              <label class="form-label required">Category Name</label>
+              <input
+                type="text"
+                class="form-input"
+                id="categoryName"
+                placeholder="Enter category name"
+                required
+              />
+              <div class="form-error" id="categoryNameError">
+                Category name is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea
+                class="form-textarea"
+                id="categoryDescription"
+                placeholder="Enter category description (optional)"
+                rows="3"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="modal-btn secondary" onclick="closeCategoryModal()">
+            <i class="fas fa-times"></i>
+            Cancel
+          </button>
+          <button class="modal-btn primary" onclick="saveCategory()">
+            <i class="fas fa-save"></i>
+            Save Category
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div class="custom-alert-overlay" id="customAlertOverlay">
+      <div class="custom-alert">
+        <div class="custom-alert-header">
+          <div class="custom-alert-icon" id="customAlertIcon">
+            <i class="fas fa-question-circle"></i>
+          </div>
+          <div class="custom-alert-title" id="customAlertTitle">
+            Confirm Action
+          </div>
+        </div>
+        <div class="custom-alert-message" id="customAlertMessage">
+          Are you sure you want to perform this action?
+        </div>
+        <div class="custom-alert-actions">
+          <button class="custom-alert-btn secondary" id="customAlertCancel">
+            Cancel
+          </button>
+          <button class="custom-alert-btn primary" id="customAlertConfirm">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-notification" id="toast">
+      <i class="fas fa-check-circle"></i>
+      <span id="toastMessage">Operation completed successfully!</span>
+    </div>
+
+
+ 
+
+    <script src="./Js/2ProductmanagemntModule.js"></script>
+  </body>
+</html>
